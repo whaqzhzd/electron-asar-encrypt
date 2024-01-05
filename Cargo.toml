@@ -1,0 +1,27 @@
+[package]
+authors = ["LongYinan <lynweklm@gmail.com>"]
+edition = "2021"
+name    = "napi-package-template"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+dev = []
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi        = { version = "2.13.3", features = ["napi6", "serde-json"] }
+napi-derive = "2"
+base64 = "0.21.5"
+aes = "0.7.5"
+block-modes = "0.8.1"
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
