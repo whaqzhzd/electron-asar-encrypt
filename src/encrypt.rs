@@ -23,6 +23,21 @@ impl NativeObject {
   }
 }
 
+fn decode_uri(url: &JsString, ctx: &CallContext) -> JsString {
+  let req = ctx
+    .env
+    .get_global()
+    .unwrap()
+    .get_named_property::<JsFunction>("decodeURI")
+    .unwrap();
+
+  return req
+    .call(Some(&ctx.this().unwrap()), &[url])
+    .unwrap()
+    .coerce_to_string()
+    .unwrap();
+}
+
 fn read_file_sync(ctx: &CallContext) -> JsFunction {
   let req = ctx
     .env
@@ -270,9 +285,12 @@ pub fn module_prototype_compile(ctx: CallContext) -> napi::Result<napi::JsUnknow
 
 #[js_function(3)]
 pub fn ccjs_download_scripts(ctx: CallContext) -> napi::Result<napi::JsUnknown> {
-  let url: JsString = ctx.get(0).unwrap();
+  let mut url: JsString = ctx.get(0).unwrap();
   let _: JsObject = ctx.get(1).unwrap();
   let on_complete: JsFunction = ctx.get(2).unwrap();
+
+  url = decode_uri(&url, &ctx);
+
   let s = url.into_utf8().unwrap().as_str().unwrap().to_string();
   // 不在node_modules且后缀为js类型
   let encrypt = !s.contains("node_modules") && s.ends_with(".js");
@@ -323,7 +341,8 @@ pub fn systemjs_create_scripts(ctx: CallContext) -> napi::Result<napi::JsUnknown
     .unwrap()
     .unwrap();
 
-  let url: JsString = ctx.get(0).unwrap();
+  let mut url: JsString = ctx.get(0).unwrap();
+  url = decode_uri(&url, &ctx);
 
   let old_create_scripts: &JsFunction = addon_data.functions.get(&1).unwrap();
   let read_file_sync = read_file_sync(&ctx);
